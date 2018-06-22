@@ -18,6 +18,8 @@ namespace securefs
 {
 namespace lite
 {
+
+
     struct BundledContext
     {
         ::securefs::operations::MountOptions* opt;
@@ -92,6 +94,7 @@ namespace lite
 
     void* init(struct fuse_conn_info* fsinfo)
     {
+        //OperationLogger logger("operations-" + std::string(__FUNCTION__));
 #ifdef FUSE_CAP_BIG_WRITES
         fsinfo->want |= FUSE_CAP_BIG_WRITES;
         fsinfo->max_write = static_cast<unsigned>(-1);
@@ -115,12 +118,14 @@ namespace lite
 
     void destroy(void*)
     {
+        //OperationLogger logger("operations-" + std::string(__FUNCTION__));
         delete static_cast<BundledContext*>(fuse_get_context()->private_data);
         INFO_LOG("destroy");
     }
 
     int statfs(const char* path, struct fuse_statvfs* buf)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -136,6 +141,7 @@ namespace lite
 
     int getattr(const char* path, struct fuse_stat* st)
     {
+        //OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -154,6 +160,7 @@ namespace lite
 
     int opendir(const char* path, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -166,6 +173,7 @@ namespace lite
 
     int releasedir(const char* path, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         TRACE_LOG("%s %s", __func__, path);
         try
         {
@@ -181,6 +189,7 @@ namespace lite
                 fuse_off_t,
                 struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         OPT_TRACE_WITH_PATH;
         try
         {
@@ -211,6 +220,7 @@ namespace lite
 
     int create(const char* path, fuse_mode_t mode, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -223,6 +233,7 @@ namespace lite
 
     int open(const char* path, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -235,6 +246,7 @@ namespace lite
 
     int release(const char* path, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         TRACE_LOG("%s %s", __func__, path);
         try
         {
@@ -247,6 +259,7 @@ namespace lite
     int
     read(const char* path, char* buf, size_t size, fuse_off_t offset, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         OPT_TRACE_WITH_PATH_OFF_LEN(offset, size);
         auto fp = reinterpret_cast<File*>(info->fh);
         if (!fp)
@@ -267,6 +280,9 @@ namespace lite
               fuse_off_t offset,
               struct fuse_file_info* info)
     {
+
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
+        INFO_LOG("write path=[%s], size=[%d], offset=[%d]", path, size, offset);
         OPT_TRACE_WITH_PATH_OFF_LEN(offset, size);
         auto fp = reinterpret_cast<File*>(info->fh);
         if (!fp)
@@ -284,6 +300,7 @@ namespace lite
 
     int flush(const char* path, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         TRACE_LOG("%s %s", __func__, path);
         auto fp = reinterpret_cast<File*>(info->fh);
         if (!fp)
@@ -301,6 +318,7 @@ namespace lite
 
     int ftruncate(const char* path, fuse_off_t len, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         TRACE_LOG("%s %s with length=%lld", __func__, path, static_cast<long long>(len));
         auto fp = reinterpret_cast<File*>(info->fh);
         if (!fp)
@@ -330,6 +348,7 @@ namespace lite
 
     int unlink(const char* path)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -341,6 +360,7 @@ namespace lite
 
     int mkdir(const char* path, fuse_mode_t mode)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -352,6 +372,7 @@ namespace lite
 
     int rmdir(const char* path)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -363,6 +384,7 @@ namespace lite
 
     int chmod(const char* path, fuse_mode_t mode)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -374,6 +396,7 @@ namespace lite
 
     int chown(const char* path, fuse_uid_t uid, fuse_gid_t gid)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -385,6 +408,7 @@ namespace lite
 
     int symlink(const char* to, const char* from)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         auto filesystem = get_local_filesystem();
         OPT_TRACE_WITH_TWO_PATHS(to, from);
 
@@ -398,6 +422,7 @@ namespace lite
 
     int link(const char* src, const char* dest)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         auto filesystem = get_local_filesystem();
         OPT_TRACE_WITH_TWO_PATHS(src, dest);
 
@@ -411,6 +436,7 @@ namespace lite
 
     int readlink(const char* path, char* buf, size_t size)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {
@@ -422,6 +448,7 @@ namespace lite
 
     int rename(const char* from, const char* to)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         auto filesystem = get_local_filesystem();
         OPT_TRACE_WITH_TWO_PATHS(from, to);
 
@@ -435,6 +462,7 @@ namespace lite
 
     int fsync(const char* path, int, struct fuse_file_info* info)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         TRACE_LOG("%s %s", __func__, path);
         auto fp = reinterpret_cast<File*>(info->fh);
         if (!fp)
@@ -452,6 +480,7 @@ namespace lite
 
     int truncate(const char* path, fuse_off_t len)
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         if (len < 0)
             return -EINVAL;
 
@@ -471,6 +500,7 @@ namespace lite
 
     int utimens(const char* path, const struct fuse_timespec ts[2])
     {
+        OperationLogger logger("operations-" + std::string(__FUNCTION__));
         SINGLE_COMMON_PROLOGUE
         try
         {

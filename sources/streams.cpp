@@ -1,5 +1,6 @@
-#include "streams.h"
 #include "crypto.h"
+#include "logger.h"
+#include "streams.h"
 
 #include <algorithm>
 #include <array>
@@ -202,6 +203,8 @@ void BlockBasedStream::read_then_write_block(offset_type block_number,
                                              offset_type begin,
                                              offset_type end)
 {
+    INFO_LOG(" +++++++++++++++Begin ReadThenWriteBlock +++++++++++++++, block_number=%d",
+             block_number);
     assert(begin <= m_block_size && end <= m_block_size);
 
     if (begin == 0 && end == m_block_size)
@@ -210,9 +213,18 @@ void BlockBasedStream::read_then_write_block(offset_type block_number,
         return;
 
     CryptoPP::AlignedSecByteBlock buffer(m_block_size);
+    INFO_LOG(" +++++++++++++++Begin ReadBlock +++++++++++++++, block_number=%d", block_number);
     auto rc = read_block(block_number, buffer.data());
+    INFO_LOG(" -------------------End ReadBlock-------------------, block_number=%d", block_number);
+
     memcpy(buffer.data() + begin, input, end - begin);
+
+    INFO_LOG(" +++++++++++++++Begin WriteBlock +++++++++++++++, block_number=%d", block_number);
     write_block(block_number, buffer.data(), std::max<length_type>(rc, end));
+    INFO_LOG(" -------------------End WriteBlock-------------------, block_number=%d",
+             block_number);
+    INFO_LOG(" ------------------End ReadThenWriteBlock ------------------ block_number=%d",
+             block_number);
 }
 
 length_type BlockBasedStream::read(void* output, offset_type offset, length_type length)

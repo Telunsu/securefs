@@ -81,4 +81,19 @@ extern Logger* global_logger;
 #define INFO_LOG(...) GENERIC_LOG(securefs::kLogInfo, __VA_ARGS__)
 #define WARN_LOG(...) GENERIC_LOG(securefs::kLogWarning, __VA_ARGS__)
 #define ERROR_LOG(...) GENERIC_LOG(securefs::kLogError, __VA_ARGS__)
+
+
+ class OperationLogger
+{
+public:
+    OperationLogger(const std::string& text);
+
+    ~OperationLogger();
+
+private:
+    std::string m_text;
+    LARGE_INTEGER m_begin_time;
+    LARGE_INTEGER m_end_time;
+    LARGE_INTEGER m_freq;
+};
 }    // namespace securefs

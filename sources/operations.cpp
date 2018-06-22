@@ -1,7 +1,7 @@
-#include "operations.h"
 #include "case_fold.h"
 #include "constants.h"
 #include "crypto.h"
+#include "operations.h"
 #include "platform.h"
 
 #include <algorithm>
@@ -484,7 +484,10 @@ namespace operations
         COMMON_CATCH_BLOCK
     }
 
-    int rmdir(const char* path) { return ::securefs::operations::unlink(path); }
+    int rmdir(const char* path)
+    {
+        return ::securefs::operations::unlink(path);
+    }
 
     int chmod(const char* path, fuse_mode_t mode)
     {
@@ -691,8 +694,8 @@ namespace operations
     {                                                                                              \
         auto ebase = dynamic_cast<const ExceptionBase*>(&e);                                       \
         int errc = ebase ? ebase->error_number() : EPERM;                                          \
-        if (errc != ENOATTR) /* Attribute not found is very common and normal; no need to log it   \
-                                as an error */                                                     \
+        if (errc != ENOATTR) /* Attribute not found is very common and normal; no need to log it \ \
+                                \ as \ an error */                                                                                       \
             ERROR_LOG("%s (path=%s, name=%s) encounters %s: %s",                                   \
                       __FUNCTION__,                                                                \
                       path,                                                                        \

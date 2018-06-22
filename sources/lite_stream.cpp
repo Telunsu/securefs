@@ -1,5 +1,6 @@
 #include "lite_stream.h"
 #include "crypto.h"
+#include "logger.h"
 
 #include <cryptopp/aes.h>
 #include <cryptopp/modes.h>
@@ -69,6 +70,7 @@ namespace lite
 
     length_type AESGCMCryptStream::read_block(offset_type block_number, void* output)
     {
+        OperationLogger _("AESGCMCryptStream::ReadBlock");
         if (block_number > MAX_BLOCKS)
             throw StreamTooLongException(MAX_BLOCKS * get_block_size(),
                                          block_number * get_block_size());
@@ -94,18 +96,23 @@ namespace lite
         byte auxiliary[sizeof(std::uint32_t)];
         to_little_endian(static_cast<std::uint32_t>(block_number), auxiliary);
 
-        bool success = m_decryptor.DecryptAndVerify(static_cast<byte*>(output),
-                                                    m_buffer.get() + rc - get_mac_size(),
-                                                    get_mac_size(),
-                                                    m_buffer.get(),
-                                                    static_cast<int>(get_iv_size()),
-                                                    auxiliary,
-                                                    sizeof(auxiliary),
-                                                    m_buffer.get() + get_iv_size(),
-                                                    out_size);
+        bool success = false;		
+		{
+            OperationLogger _("DecryptAndAuthenticate");
+            success = m_decryptor.DecryptAndVerify(static_cast<byte*>(output),
+                                                  m_buffer.get() + rc - get_mac_size(),
+                                                  get_mac_size(),
+                                                  m_buffer.get(),
+                                                  static_cast<int>(get_iv_size()),
+                                                  auxiliary,
+                                                  sizeof(auxiliary),
+                                                  m_buffer.get() + get_iv_size(),
+                                                  out_size);
+        }
 
         if (m_check && !success)
             throw LiteMessageVerificationException();
+
 
         return out_size;
     }
@@ -113,6 +120,7 @@ namespace lite
     void
     AESGCMCryptStream::write_block(offset_type block_number, const void* input, length_type size)
     {
+        OperationLogger _("AESGCMCryptStream::WriteBlock");
         if (block_number > MAX_BLOCKS)
             throw StreamTooLongException(MAX_BLOCKS * get_block_size(),
                                          block_number * get_block_size());
@@ -135,15 +143,18 @@ namespace lite
             generate_random(m_buffer.get(), get_iv_size());
         } while (is_all_zeros(m_buffer.get(), get_iv_size()));
 
-        m_encryptor.EncryptAndAuthenticate(m_buffer.get() + get_iv_size(),
-                                           m_buffer.get() + get_iv_size() + size,
-                                           get_mac_size(),
-                                           m_buffer.get(),
-                                           static_cast<int>(get_iv_size()),
-                                           auxiliary,
-                                           sizeof(auxiliary),
-                                           static_cast<const byte*>(input),
-                                           size);
+		{
+            OperationLogger _("EncryptAndAuthenticate");
+            m_encryptor.EncryptAndAuthenticate(m_buffer.get() + get_iv_size(),
+                                               m_buffer.get() + get_iv_size() + size,
+                                               get_mac_size(),
+                                               m_buffer.get(),
+                                               static_cast<int>(get_iv_size()),
+                                               auxiliary,
+                                               sizeof(auxiliary),
+                                               static_cast<const byte*>(input),
+                                               size);
+		}
 
         m_stream->write(m_buffer.get(), underlying_offset, underlying_size);
     }

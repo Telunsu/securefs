@@ -109,4 +109,27 @@ Logger* Logger::create_file_logger(const std::string& path)
 }
 
 Logger* global_logger = Logger::create_stderr_logger();
+
+
+ OperationLogger::OperationLogger(const std::string& text)
+{
+    //QueryPerformanceCounter(&m_begin_time);
+    //QueryPerformanceCounter(&m_freq);
+    INFO_LOG("Being ++++++++++++++[%s]++++++++++++", text.c_str());
+    m_text = text;
+}
+
+OperationLogger::~OperationLogger()
+{
+    /*
+    QueryPerformanceCounter(&m_end_time);
+
+    INFO_LOG("End   --------------[%s]----------d--, cost=%d",
+             m_text.c_str(),
+             (m_end_time.QuadPart - m_begin_time.QuadPart) * 1000000 / m_freq.QuadPart);
+	*/
+    INFO_LOG("End   --------------[%s]------------",
+             m_text.c_str());
+}
+
 }    // namespace securefs
